@@ -17,26 +17,47 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Step 2: Download JUCE 8.0.2 from the releases page
+      # Step 2: Select a specific Xcode version (if necessary)
+      - name: Select Xcode version
+        run: sudo xcode-select --switch /Applications/Xcode_14.3.app/Contents/Developer
+
+      # Step 3: Download JUCE 8.0.2 from the releases page
       - name: Download JUCE
         run: |
           curl -L https://github.com/juce-framework/JUCE/releases/download/8.0.2/juce-8.0.2-osx.zip -o juce.zip
 
-      # Step 3: Unzip JUCE
+      # Step 4: Unzip JUCE
       - name: Unzip JUCE
         run: |
           unzip juce.zip -d juce
           ls juce
 
-      # Step 4: Install dependencies (CMake, if not already available)
-      - name: Install CMake
-        run: |
-          brew install cmake
+      # Step 5: Set project folder permissions (ensure juceaide has access)
+      - name: Set project folder permissions
+        run: sudo chmod -R 777 .
 
-      # Step 5: Configure CMake to use JUCE
-      - name: Configure CMake
+      # Step 6: Install dependencies (CMake)
+      - name: Install CMake
+        run: brew install cmake
+
+      # Step 7: Check if juceaide runs correctly
+      - name: Check juceaide version
+        run: |
+          cd juce/juce-8.0.2/extras/Projucer/Builds/MacOSX
+          ./juceaide --version
+
+      # Step 8: Configure CMake (with no code-signing)
+      - name: Configure CMake with no code-signing
         run: |
           mkdir build
           cd build
-          cmake -DJUCE_DIR=../juce/juce-8.0.2 ..  # Adjust this to point to JUCE location
+          cmake -DJUCE_DIR=../juce/juce-8.0.2 -DJUCE_SIGNING_IDENTITY="" -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON ..
           cmake --build .
+
+      # Step 9: Debug juceaide in case of failure
+      - name: Run juceaide manually for debugging (if needed)
+        if: failure()  # Only run this if the build fails
+        run: |
+          cd juce/juce-8.0.2/extras/Projucer/Builds/MacOSX
+          ./juceaide --help
+
