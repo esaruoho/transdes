@@ -17,7 +17,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Step 2: Select a specific Xcode version (if necessary)
+      # Step 2: Select Xcode version (if necessary)
       - name: Select Xcode version
         run: sudo xcode-select --switch /Applications/Xcode_14.3.app/Contents/Developer
 
@@ -30,7 +30,7 @@ jobs:
       - name: Unzip JUCE
         run: |
           unzip juce.zip -d juce
-          ls juce
+          ls -R juce
 
       # Step 5: Set project folder permissions (ensure juceaide has access)
       - name: Set project folder permissions
@@ -40,24 +40,15 @@ jobs:
       - name: Install CMake
         run: brew install cmake
 
-      # Step 7: Check if juceaide runs correctly
-      - name: Check juceaide version
-        run: |
-          cd juce/juce-8.0.2/extras/Projucer/Builds/MacOSX
-          ./juceaide --version
-
-      # Step 8: Configure CMake (with no code-signing)
-      - name: Configure CMake with no code-signing
+      # Step 7: Configure CMake (with no code-signing)
+      - name: Configure and Build CMake
         run: |
           mkdir build
           cd build
           cmake -DJUCE_DIR=../juce/juce-8.0.2 -DJUCE_SIGNING_IDENTITY="" -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON ..
           cmake --build .
 
-      # Step 9: Debug juceaide in case of failure
-      - name: Run juceaide manually for debugging (if needed)
-        if: failure()  # Only run this if the build fails
-        run: |
-          cd juce/juce-8.0.2/extras/Projucer/Builds/MacOSX
-          ./juceaide --help
-
+      # Step 8: Add failure checks and detailed logging (if needed)
+      - name: Post-failure directory structure check
+        if: failure()
+        run: ls -R build
