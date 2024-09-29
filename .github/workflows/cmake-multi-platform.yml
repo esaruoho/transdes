@@ -22,6 +22,7 @@ jobs:
       - name: Install dependencies
         run: |
           brew install cmake
+          brew install juce
           # If you need other dependencies, install them via Homebrew
 
       # Configure and build with CMake
