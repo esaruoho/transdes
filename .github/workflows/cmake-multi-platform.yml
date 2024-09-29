@@ -13,22 +13,30 @@ jobs:
     runs-on: macos-latest
 
     steps:
-      # Checkout the repository
+      # Step 1: Checkout your code
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Install dependencies (if any)
-      # This is optional, depending on what your project needs
-      - name: Install dependencies
+      # Step 2: Download JUCE 8.0.2 from the releases page
+      - name: Download JUCE
+        run: |
+          curl -L https://github.com/juce-framework/JUCE/releases/download/8.0.2/juce-8.0.2-osx.zip -o juce.zip
+
+      # Step 3: Unzip JUCE
+      - name: Unzip JUCE
+        run: |
+          unzip juce.zip -d juce
+          ls juce
+
+      # Step 4: Install dependencies (CMake, if not already available)
+      - name: Install CMake
         run: |
           brew install cmake
-          brew install juce
-          # If you need other dependencies, install them via Homebrew
 
-      # Configure and build with CMake
+      # Step 5: Configure CMake to use JUCE
       - name: Configure CMake
         run: |
           mkdir build
           cd build
-          cmake ..
+          cmake -DJUCE_DIR=../juce/juce-8.0.2 ..  # Adjust this to point to JUCE location
           cmake --build .
